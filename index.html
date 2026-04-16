@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>勉強記録</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, sans-serif; background: #f5f5f5; color: #333; }
+    .screen { display: none; min-height: 100vh; padding: 20px; }
+    .screen.active { display: block; }
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    h1 { font-size: 20px; font-weight: 700; }
+    h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+    .nav { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .nav button { flex: 1; padding: 10px; border: none; border-radius: 8px; background: #fff; font-size: 14px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .nav button.active { background: #4f46e5; color: #fff; }
+    .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    select, input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 12px; background: #fff; }
+    button.primary { width: 100%; padding: 14px; background: #4f46e5; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+    button.secondary { width: 100%; padding: 12px; background: #fff; color: #4f46e5; border: 2px solid #4f46e5; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+    #timer-display { font-size: 64px; font-weight: 700; text-align: center; letter-spacing: 2px; color: #4f46e5; margin: 32px 0; }
+    .subject-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .subject-btn { padding: 14px; border: 2px solid #ddd; border-radius: 10px; background: #fff; font-size: 14px; cursor: pointer; font-weight: 500; }
+    .subject-btn.selected { border-color: #4f46e5; background: #eef2ff; color: #4f46e5; }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { font-size: 14px; color: #666; }
+    .stat-value { font-size: 15px; font-weight: 600; }
+    .progress-bar { height: 8px; background: #eee; border-radius: 4px; margin-top: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #4f46e5; border-radius: 4px; transition: width 0.3s; }
+    .tag { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #eef2ff; color: #4f46e5; margin-right: 6px; margin-bottom: 6px; }
+    .streak-display { text-align: center; padding: 20px; }
+    .streak-number { font-size: 56px; font-weight: 700; color: #f59e0b; }
+    .streak-label { font-size: 14px; color: #666; margin-top: 4px; }
+    .warning { color: #ef4444; font-size: 13px; margin-bottom: 8px; }
+    .success { color: #10b981; font-size: 13px; margin-bottom: 8px; }
+    .section-title { font-size: 13px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; margin-top: 4px; }
+    .material-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .material-item:last-child { border-bottom: none; }
+    #back-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 4px; }
+  </style>
+</head>
+<body>
+
+<div id="screen-timer" class="screen active">
+  <header>
+    <h1>⏱ タイマー</h1>
+  </header>
+  <div class="card">
+    <h2>科目を選択</h2>
+    <div class="subject-grid" id="subject-grid"></div>
+  </div>
+  <div class="card">
+    <div id="timer-display">00:00:00</div>
+    <button class="primary" id="timer-btn" onclick="toggleTimer()">スタート</button>
+    <button class="secondary" id="save-btn" style="display:none" onclick="saveRecord()">記録を保存</button>
+    <p id="timer-msg" style="text-align:center;margin-top:10px;font-size:13px;color:#666;"></p>
+  </div>
+</div>
+
+<div id="screen-dashboard" class="screen">
+  <header>
+    <h1>📊 ダッシュボード</h1>
+  </header>
+  <div class="card">
+    <div class="section-title">総勉強時間</div>
+    <div class="stat-row">
+      <span class="stat-label">合計</span>
+      <span class="stat-value" id="total-hours">--</span>
+    </div>
+    <div id="subject-stats"></div>
+  </div>
+  <div class="card">
+    <div class="section-title">今週のバランス</div>
+    <div id="balance-warning"></div>
+    <div id="weekly-balance"></div>
+  </div>
+  <div class="card streak-display">
+    <div class="section-title">連続記録</div>
+    <div class="streak-number" id="streak-count">0</div>
+    <div class="streak-label">日連続🔥</div>
+  </div>
+</div>
+
+<div id="screen-materials" class="screen">
+  <header>
+    <h1>📚 教材管理</h1>
+  </header>
+  <div class="card">
+    <h2>教材を追加</h2>
+    <input type="text" id="new-subject" placeholder="科目（例：数学）">
+    <input type="text" id="new-material" placeholder="教材名（例：基礎問題精講1A）">
+    <input type="number" id="new-target" placeholder="目標時間（時間）">
+    <p id="material-msg" class="success" style="display:none"></p>
+    <button class="primary" onclick="addMaterial()">追加</button>
+  </div>
+  <div class="card" id="materials-list">
+    <h2>登録済み教材</h2>
+    <div id="materials-content">読み込み中...</div>
+  </div>
+</div>
+
+<div id="screen-detail" class="screen">
+  <header>
+    <button id="back-btn" onclick="showScreen('dashboard')">←</button>
+    <h1 id="detail-title">科目詳細</h1>
+  </header>
+  <div class="card" id="detail-content"></div>
+</div>
+
+<div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:flex;z-index:100;">
+  <button onclick="showScreen('timer')" style="flex:1;padding:14px;border:none;background:none;font-size:12px;cursor:pointer;">⏱<br>タイマー</button>
+  <button onclick="showScreen('dashboard')" style="flex:1;padding:14px;border:none;background:none;font-size:12px;cursor:pointer;">📊<br>ダッシュボード</button>
+  <button onclick="showScreen('materials')" style="flex:1;padding:14px;border:none;background:none;font-size:12px;cursor:pointer;">📚<br>教材</button>
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwA6Tc5xqZvd0zu0aqQIw5WMwtvGMez6qoTpx3r0673oC_6cKDkqdm0X-Bupl-XfNbf/exec';
+
+let timerInterval = null;
+let timerSeconds = 0;
+let timerRunning = false;
+let selectedSubject = null;
+let materials = [];
+let records = [];
+
+async function loadMaterials() {
+  try {
+    const res = await fetch(`${GAS_URL}?action=getMaterials`);
+    materials = await res.json();
+    renderSubjectGrid();
+    renderMaterialsList();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+async function loadRecords() {
+  try {
+    const res = await fetch(`${GAS_URL}?action=getRecords`);
+    records = await res.json();
+    renderDashboard();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function getSubjects() {
+  return [...new Set(materials.map(m => m.subject))];
+}
+
+function renderSubjectGrid() {
+  const grid = document.getElementById('subject-grid');
+  const subjects = getSubjects();
+  if (subjects.length === 0) {
+    grid.innerHTML = '<p style="color:#999;font-size:13px;grid-column:1/-1">先に教材タブで科目を登録してね</p>';
+    return;
+  }
+  grid.innerHTML = subjects.map(s =>
+    `<button class="subject-btn ${selectedSubject === s ? 'selected' : ''}" onclick="selectSubject('${s}')">${s}</button>`
+  ).join('');
+}
+
+function selectSubject(s) {
+  selectedSubject = s;
+  renderSubjectGrid();
+}
+
+function toggleTimer() {
+  if (!selectedSubject) {
+    document.getElementById('timer-msg').textContent = '科目を選んでからスタートしてね';
+    return;
+  }
+  document.getElementById('timer-msg').textContent = '';
+  if (!timerRunning) {
+    timerRunning = true;
+    document.getElementById('timer-btn').textContent = '一時停止';
+    document.getElementById('save-btn').style.display = 'block';
+    timerInterval = setInterval(() => {
+      timerSeconds++;
+      updateTimerDisplay();
+    }, 1000);
+  } else {
+    timerRunning = false;
+    clearInterval(timerInterval);
+    document.getElementById('timer-btn').textContent = '再開';
+  }
+}
+
+function updateTimerDisplay() {
+  const h = String(Math.floor(timerSeconds / 3600)).padStart(2, '0');
+  const m = String(Math.floor((timerSeconds % 3600) / 60)).padStart(2, '0');
+  const s = String(timerSeconds % 60).padStart(2, '0');
+  document.getElementById('timer-display').textContent = `${h}:${m}:${s}`;
+}
+
+async function saveRecord() {
+  if (timerSeconds < 60) {
+    document.getElementById('timer-msg').textContent = '1分以上計測してから保存してね';
+    return;
+  }
+  clearInterval(timerInterval);
+  timerRunning = false;
+
+  const duration = Math.round(timerSeconds / 60);
+  const now = new Date();
+  const datetime = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  document.getElementById('timer-msg').textContent = '保存中...';
+  document.getElementById('save-btn').disabled = true;
+
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'addRecord', datetime, subject: selectedSubject, material: '', duration }),
+    });
+    document.getElementById('timer-msg').textContent = `✅ ${duration}分を記録しました！`;
+    timerSeconds = 0;
+    updateTimerDisplay();
+    document.getElementById('timer-btn').textContent = 'スタート';
+    document.getElementById('save-btn').style.display = 'none';
+    document.getElementById('save-btn').disabled = false;
+    await loadRecords();
+  } catch(e) {
+    document.getElementById('timer-msg').textContent = '保存に失敗しました。もう一度試してね。';
+    document.getElementById('save-btn').disabled = false;
+  }
+}
+
+async function addMaterial() {
+  const subject = document.getElementById('new-subject').value.trim();
+  const material = document.getElementById('new-material').value.trim();
+  const target = parseFloat(document.getElementById('new-target').value);
+  if (!subject || !material || isNaN(target)) {
+    document.getElementById('material-msg').textContent = '全て入力してね';
+    document.getElementById('material-msg').className = 'warning';
+    document.getElementById('material-msg').style.display = 'block';
+    return;
+  }
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'addMaterial', subject, material, target_hours: target }),
+    });
+    document.getElementById('material-msg').textContent = `✅ ${subject}「${material}」を追加しました！`;
+    document.getElementById('material-msg').className = 'success';
+    document.getElementById('material-msg').style.display = 'block';
+    document.getElementById('new-subject').value = '';
+    document.getElementById('new-material').value = '';
+    document.getElementById('new-target').value = '';
+    await loadMaterials();
+  } catch(e) {
+    document.getElementById('material-msg').textContent = '追加に失敗しました';
+    document.getElementById('material-msg').className = 'warning';
+    document.getElementById('material-msg').style.display = 'block';
+  }
+}
+
+function renderMaterialsList() {
+  const subjects = getSubjects();
+  if (subjects.length === 0) {
+    document.getElementById('materials-content').innerHTML = '<p style="color:#999;font-size:13px">まだ教材が登録されていません</p>';
+    return;
+  }
+  let html = '';
+  subjects.forEach(s => {
+    html += `<div class="section-title" style="margin-top:12px">${s}</div>`;
+    materials.filter(m => m.subject === s).forEach(m => {
+      html += `<div class="material-item"><span>${m.material}</span><span style="color:#999;font-size:13px">目標 ${m.target_hours}h</span></div>`;
+    });
+  });
+  document.getElementById('materials-content').innerHTML = html;
+}
+
+function renderDashboard() {
+  const totalMin = records.reduce((sum, r) => sum + Number(r.duration), 0);
+  document.getElementById('total-hours').textContent = `${Math.floor(totalMin/60)}時間${totalMin%60}分`;
+
+  const subjects = getSubjects();
+  let subjectHtml = '';
+  subjects.forEach(s => {
+    const subMin = records.filter(r => r.subject === s).reduce((sum, r) => sum + Number(r.duration), 0);
+    const targetMin = materials.filter(m => m.subject === s).reduce((sum, m) => sum + Number(m.target_hours)*60, 0);
+    const pct = targetMin > 0 ? Math.min(100, Math.round(subMin/targetMin*100)) : 0;
+    subjectHtml += `
+      <div class="stat-row" style="flex-direction:column;align-items:flex-start;cursor:pointer" onclick="showDetail('${s}')">
+        <div style="display:flex;justify-content:space-between;width:100%">
+          <span class="stat-label">${s} ›</span>
+          <span class="stat-value">${Math.floor(subMin/60)}h${subMin%60}m</span>
+        </div>
+        ${targetMin > 0 ? `<div class="progress-bar" style="width:100%"><div class="progress-fill" style="width:${pct}%"></div></div>` : ''}
+      </div>`;
+  });
+  document.getElementById('subject-stats').innerHTML = subjectHtml;
+
+  const today = new Date();
+  const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 7);
+  const weekRecords = records.filter(r => new Date(r.datetime) >= weekAgo);
+  const weekSubjects = {};
+  weekRecords.forEach(r => { weekSubjects[r.subject] = (weekSubjects[r.subject] || 0) + Number(r.duration); });
+
+  let balanceHtml = '';
+  let warnings = [];
+  subjects.forEach(s => {
+    if (!weekSubjects[s]) warnings.push(s);
+    const min = weekSubjects[s] || 0;
+    balanceHtml += `<div class="stat-row"><span class="stat-label">${s}</span><span class="stat-value">${Math.floor(min/60)}h${min%60}m</span></div>`;
+  });
+  document.getElementById('weekly-balance').innerHTML = balanceHtml || '<p style="color:#999;font-size:13px">今週の記録なし</p>';
+  document.getElementById('balance-warning').innerHTML = warnings.length > 0
+    ? `<p class="warning">今週ゼロ：${warnings.join('、')}</p>` : '';
+
+  const dates = new Set(records.map(r => r.datetime.split(' ')[0]));
+  let streak = 0;
+  const check = new Date(today);
+  while (true) {
+    const key = `${check.getFullYear()}/${String(check.getMonth()+1).padStart(2,'0')}/${String(check.getDate()).padStart(2,'0')}`;
+    if (dates.has(key)) { streak++; check.setDate(check.getDate()-1); }
+    else break;
+  }
+  document.getElementById('streak-count').textContent = streak;
+}
+
+function showDetail(subject) {
+  document.getElementById('detail-title').textContent = subject;
+  const subMaterials = materials.filter(m => m.subject === subject);
+  let html = '';
+  subMaterials.forEach(m => {
+    const min = records.filter(r => r.subject === subject && r.material === m.material).reduce((sum, r) => sum + Number(r.duration), 0);
+    const targetMin = Number(m.target_hours) * 60;
+    const pct = targetMin > 0 ? Math.min(100, Math.round(min/targetMin*100)) : 0;
+    html += `
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:14px;font-weight:500">${m.material}</span>
+          <span style="font-size:13px;color:#666">${Math.floor(min/60)}h${min%60}m / ${m.target_hours}h</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div style="text-align:right;font-size:12px;color:#999;margin-top:2px">${pct}%</div>
+      </div>`;
+  });
+  if (subMaterials.length === 0) html = '<p style="color:#999;font-size:13px">この科目の教材が登録されていません</p>';
+  document.getElementById('detail-content').innerHTML = html;
+  showScreen('detail');
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`screen-${name}`).classList.add('active');
+  if (name === 'dashboard') { loadMaterials(); loadRecords(); }
+  if (name === 'materials') loadMaterials();
+}
+
+loadMaterials();
+loadRecords();
+</script>
+</body>
+</html>
