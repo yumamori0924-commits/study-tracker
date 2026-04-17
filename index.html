@@ -5,64 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>勉強記録</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, sans-serif; background: #f5f5f5; color: #333; }
-    .screen { display: none; min-height: 100vh; padding: 20px; }
+   * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, sans-serif; background: #f0f4f8; color: #2d3748; }
+    .screen { display: none; min-height: 100vh; padding: 20px; padding-bottom: 80px; }
     .screen.active { display: block; }
     header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-    h1 { font-size: 20px; font-weight: 700; }
-    h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
-    .nav { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-    .nav button { flex: 1; padding: 10px; border: none; border-radius: 8px; background: #fff; font-size: 14px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .nav button.active { background: #4f46e5; color: #fff; }
-    .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    select, input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 12px; background: #fff; }
-    button.primary { width: 100%; padding: 14px; background: #4f46e5; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
-    button.secondary { width: 100%; padding: 12px; background: #fff; color: #4f46e5; border: 2px solid #4f46e5; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; }
-    #timer-display { font-size: 64px; font-weight: 700; text-align: center; letter-spacing: 2px; color: #4f46e5; margin: 32px 0; }
-    .subject-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-    .subject-btn { padding: 14px; border: 2px solid #ddd; border-radius: 10px; background: #fff; font-size: 14px; cursor: pointer; font-weight: 500; }
-    .subject-btn.selected { border-color: #4f46e5; background: #eef2ff; color: #4f46e5; }
-    .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    h1 { font-size: 20px; font-weight: 700; color: #2d3748; }
+    h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #4a5568; }
+    .card { background: #ffffff; border-radius: 14px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #e8edf2; }
+    select, input { width: 100%; padding: 10px 12px; border: 1px solid #dce3ea; border-radius: 8px; font-size: 14px; margin-bottom: 12px; background: #f8fafc; color: #2d3748; }
+    button.primary { width: 100%; padding: 14px; background: #5b8dee; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+    button.secondary { width: 100%; padding: 12px; background: #fff; color: #5b8dee; border: 2px solid #5b8dee; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+    #timer-display { font-size: 64px; font-weight: 700; text-align: center; letter-spacing: 2px; color: #5b8dee; margin: 32px 0; }
+    .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .sel-btn { padding: 14px; border: 2px solid #dce3ea; border-radius: 10px; background: #f8fafc; font-size: 14px; cursor: pointer; font-weight: 500; text-align: center; color: #4a5568; }
+    .sel-btn.selected { border-color: #5b8dee; background: #eef4ff; color: #3a6fd8; }
+    .material-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f4f8; }
     .stat-row:last-child { border-bottom: none; }
-    .stat-label { font-size: 14px; color: #666; }
-    .stat-value { font-size: 15px; font-weight: 600; }
-    .progress-bar { height: 8px; background: #eee; border-radius: 4px; margin-top: 6px; overflow: hidden; }
-    .progress-fill { height: 100%; background: #4f46e5; border-radius: 4px; transition: width 0.3s; }
-    .tag { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #eef2ff; color: #4f46e5; margin-right: 6px; margin-bottom: 6px; }
+    .stat-label { font-size: 14px; color: #718096; }
+    .stat-value { font-size: 15px; font-weight: 600; color: #2d3748; }
+    .progress-bar { height: 8px; background: #e8edf2; border-radius: 4px; margin-top: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #5b8dee; border-radius: 4px; transition: width 0.3s; }
     .streak-display { text-align: center; padding: 20px; }
-    .streak-number { font-size: 56px; font-weight: 700; color: #f59e0b; }
-    .streak-label { font-size: 14px; color: #666; margin-top: 4px; }
-    .warning { color: #ef4444; font-size: 13px; margin-bottom: 8px; }
-    .success { color: #10b981; font-size: 13px; margin-bottom: 8px; }
-    .section-title { font-size: 13px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; margin-top: 4px; }
-    .material-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .streak-number { font-size: 56px; font-weight: 700; color: #f6a435; }
+    .streak-label { font-size: 14px; color: #718096; margin-top: 4px; }
+    .warning { color: #e05c5c; font-size: 13px; margin-bottom: 8px; }
+    .success { color: #48bb78; font-size: 13px; margin-bottom: 8px; }
+    .section-title { font-size: 12px; color: #a0aec0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; margin-top: 4px; }
+    .material-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f4f8; }
     .material-item:last-child { border-bottom: none; }
-    #back-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 4px; }
+    #back-btn { background: none; border: none; font-size: 24px; cursor: pointer; padding: 4px; color: #718096; }
+    .step-label { font-size: 12px; color: #a0aec0; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .selected-info { background: #eef4ff; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; color: #3a6fd8; font-weight: 500; border: 1px solid #d0e1ff; }
   </style>
 </head>
 <body>
 
 <div id="screen-timer" class="screen active">
-  <header>
-    <h1>⏱ タイマー</h1>
-  </header>
-  <div class="card">
-    <h2>科目を選択</h2>
-    <div class="subject-grid" id="subject-grid"></div>
+  <header><h1>⏱ タイマー</h1></header>
+
+  <div class="card" id="step-subject">
+    <div class="step-label">STEP 1 　科目を選択</div>
+    <div class="btn-grid" id="subject-grid"></div>
   </div>
-  <div class="card">
+
+  <div class="card" id="step-material" style="display:none">
+    <div class="step-label">STEP 2 　教材を選択</div>
+    <div class="selected-info" id="selected-subject-label"></div>
+    <div class="material-grid" id="material-grid"></div>
+  </div>
+
+  <div class="card" id="step-timer" style="display:none">
+    <div class="selected-info" id="selected-info-label"></div>
     <div id="timer-display">00:00:00</div>
     <button class="primary" id="timer-btn" onclick="toggleTimer()">スタート</button>
     <button class="secondary" id="save-btn" style="display:none" onclick="saveRecord()">記録を保存</button>
     <p id="timer-msg" style="text-align:center;margin-top:10px;font-size:13px;color:#666;"></p>
+    <button style="width:100%;margin-top:12px;padding:10px;border:none;background:none;color:#999;font-size:13px;cursor:pointer;" onclick="resetTimer()">← 最初から選び直す</button>
   </div>
 </div>
 
 <div id="screen-dashboard" class="screen">
-  <header>
-    <h1>📊 ダッシュボード</h1>
-  </header>
+  <header><h1>📊 ダッシュボード</h1></header>
   <div class="card">
     <div class="section-title">総勉強時間</div>
     <div class="stat-row">
@@ -84,9 +89,7 @@
 </div>
 
 <div id="screen-materials" class="screen">
-  <header>
-    <h1>📚 教材管理</h1>
-  </header>
+  <header><h1>📚 教材管理</h1></header>
   <div class="card">
     <h2>教材を追加</h2>
     <input type="text" id="new-subject" placeholder="科目（例：数学）">
@@ -95,7 +98,7 @@
     <p id="material-msg" class="success" style="display:none"></p>
     <button class="primary" onclick="addMaterial()">追加</button>
   </div>
-  <div class="card" id="materials-list">
+  <div class="card">
     <h2>登録済み教材</h2>
     <div id="materials-content">読み込み中...</div>
   </div>
@@ -122,6 +125,7 @@ let timerInterval = null;
 let timerSeconds = 0;
 let timerRunning = false;
 let selectedSubject = null;
+let selectedMaterial = null;
 let materials = [];
 let records = [];
 
@@ -131,9 +135,7 @@ async function loadMaterials() {
     materials = await res.json();
     renderSubjectGrid();
     renderMaterialsList();
-  } catch(e) {
-    console.error(e);
-  }
+  } catch(e) { console.error(e); }
 }
 
 async function loadRecords() {
@@ -141,9 +143,7 @@ async function loadRecords() {
     const res = await fetch(`${GAS_URL}?action=getRecords`);
     records = await res.json();
     renderDashboard();
-  } catch(e) {
-    console.error(e);
-  }
+  } catch(e) { console.error(e); }
 }
 
 function getSubjects() {
@@ -158,21 +158,55 @@ function renderSubjectGrid() {
     return;
   }
   grid.innerHTML = subjects.map(s =>
-    `<button class="subject-btn ${selectedSubject === s ? 'selected' : ''}" onclick="selectSubject('${s}')">${s}</button>`
+    `<button class="sel-btn" onclick="selectSubject('${s}')">${s}</button>`
   ).join('');
 }
 
 function selectSubject(s) {
   selectedSubject = s;
+  selectedMaterial = null;
+
+  document.getElementById('selected-subject-label').textContent = `📖 ${s}`;
+  const subMaterials = materials.filter(m => m.subject === s);
+  const grid = document.getElementById('material-grid');
+  grid.innerHTML = subMaterials.map(m =>
+    `<button class="sel-btn" onclick="selectMaterial('${m.material}')">${m.material}</button>`
+  ).join('');
+
+  document.getElementById('step-material').style.display = 'block';
+  document.getElementById('step-timer').style.display = 'none';
+  document.getElementById('step-material').scrollIntoView({ behavior: 'smooth' });
+}
+
+function selectMaterial(m) {
+  selectedMaterial = m;
+
+  document.querySelectorAll('#material-grid .sel-btn').forEach(btn => {
+    btn.classList.toggle('selected', btn.textContent === m);
+  });
+
+  document.getElementById('selected-info-label').textContent = `${selectedSubject}　›　${m}`;
+  document.getElementById('step-timer').style.display = 'block';
+  document.getElementById('step-timer').scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = 0;
+  selectedSubject = null;
+  selectedMaterial = null;
+  updateTimerDisplay();
+  document.getElementById('timer-btn').textContent = 'スタート';
+  document.getElementById('save-btn').style.display = 'none';
+  document.getElementById('timer-msg').textContent = '';
+  document.getElementById('step-material').style.display = 'none';
+  document.getElementById('step-timer').style.display = 'none';
   renderSubjectGrid();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function toggleTimer() {
-  if (!selectedSubject) {
-    document.getElementById('timer-msg').textContent = '科目を選んでからスタートしてね';
-    return;
-  }
-  document.getElementById('timer-msg').textContent = '';
   if (!timerRunning) {
     timerRunning = true;
     document.getElementById('timer-btn').textContent = '一時停止';
@@ -213,7 +247,7 @@ async function saveRecord() {
   try {
     await fetch(GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'addRecord', datetime, subject: selectedSubject, material: '', duration }),
+      body: JSON.stringify({ action: 'addRecord', datetime, subject: selectedSubject, material: selectedMaterial, duration }),
     });
     document.getElementById('timer-msg').textContent = `✅ ${duration}分を記録しました！`;
     timerSeconds = 0;
@@ -232,10 +266,11 @@ async function addMaterial() {
   const subject = document.getElementById('new-subject').value.trim();
   const material = document.getElementById('new-material').value.trim();
   const target = parseFloat(document.getElementById('new-target').value);
+  const msg = document.getElementById('material-msg');
   if (!subject || !material || isNaN(target)) {
-    document.getElementById('material-msg').textContent = '全て入力してね';
-    document.getElementById('material-msg').className = 'warning';
-    document.getElementById('material-msg').style.display = 'block';
+    msg.textContent = '全て入力してね';
+    msg.className = 'warning';
+    msg.style.display = 'block';
     return;
   }
   try {
@@ -243,17 +278,17 @@ async function addMaterial() {
       method: 'POST',
       body: JSON.stringify({ action: 'addMaterial', subject, material, target_hours: target }),
     });
-    document.getElementById('material-msg').textContent = `✅ ${subject}「${material}」を追加しました！`;
-    document.getElementById('material-msg').className = 'success';
-    document.getElementById('material-msg').style.display = 'block';
+    msg.textContent = `✅ ${subject}「${material}」を追加しました！`;
+    msg.className = 'success';
+    msg.style.display = 'block';
     document.getElementById('new-subject').value = '';
     document.getElementById('new-material').value = '';
     document.getElementById('new-target').value = '';
     await loadMaterials();
   } catch(e) {
-    document.getElementById('material-msg').textContent = '追加に失敗しました';
-    document.getElementById('material-msg').className = 'warning';
-    document.getElementById('material-msg').style.display = 'block';
+    msg.textContent = '追加に失敗しました';
+    msg.className = 'warning';
+    msg.style.display = 'block';
   }
 }
 
